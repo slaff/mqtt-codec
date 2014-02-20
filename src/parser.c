@@ -12,7 +12,7 @@
       return MQTT_PARSER_RC_INCOMPLETE; \
     } \
     \
-    int str_length = data[*nread] * 256 + data[*nread + 1]; \
+    size_t str_length = data[*nread] * 256 + data[*nread + 1]; \
     \
     if ((len - *nread - 2) < str_length) { \
       return MQTT_PARSER_RC_INCOMPLETE; \
@@ -73,7 +73,7 @@ mqtt_parser_rc_t mqtt_parser_execute(mqtt_parser_t* parser, mqtt_message_t* mess
       }
 
       case MQTT_PARSER_STATE_REMAINING_LENGTH: {
-        int digit_bytes = 0,
+        size_t digit_bytes = 0,
             multiplier = 1,
             remaining_length = 0;
 

@@ -54,7 +54,7 @@ typedef struct mqtt_topicpair_s {
   mqtt_qos_t qos; \
   mqtt_dup_t dup; \
   mqtt_type_t type; \
-  uint32_t length;
+  size_t length;
 
 typedef union mqtt_message_u {
   struct {
