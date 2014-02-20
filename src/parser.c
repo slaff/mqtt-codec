@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
-#include <math.h>
 
 #include "errors.h"
 #include "message.h"
@@ -28,9 +27,9 @@
     parser->buffer_pending = 0; \
     \
     if (parser->buffer != NULL) { \
-      memcpy(parser->buffer, data + *nread + 2, fmin(str_length, parser->buffer_length)); \
+      memcpy(parser->buffer, data + *nread + 2, ((str_length) < (parser->buffer_length) ? (str_length) : (parser->buffer_length))); \
       \
-      into.length = fmin(str_length, parser->buffer_length); \
+      into.length = ((str_length) < (parser->buffer_length) ? (str_length) : (parser->buffer_length)); \
       into.data = parser->buffer; \
       \
       parser->buffer = NULL; \
