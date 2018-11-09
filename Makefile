@@ -1,4 +1,4 @@
-CFLAGS += -Wall -Werror -pedantic -std=c99
+CFLAGS += -Wall -Werror -pedantic -std=c99 -Og -ggdb -DMQTT_ENABLE_SERVER=1 -DMQTT_ENABLE_CLIENT=1
 
 all: bin/test
 
