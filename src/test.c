@@ -40,8 +40,7 @@ int on_message_end(void* user_data,mqtt_message_t* message)
 	return 0;
 }
 
-
-int main(int argc, char** argv) {
+void test_parser() {
   mqtt_parser_t parser;
   mqtt_serialiser_t serialiser;
   mqtt_message_t message;
@@ -108,6 +107,7 @@ int main(int argc, char** argv) {
   0xc0, 0x00,
   /* Ping Response */
   0xd0, 0x00,
+
   /* Publish */
   0x30, 0x17, 0x00, 0x0b, 0x53, 0x61, 0x6d, 0x70,
   0x6c, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x48,
@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
   0x54,
 
   /* Disconnect */
-
+  0xe0, 0x00
   };
 
   mqtt_parser_callbacks_t callbacks;
@@ -135,18 +135,20 @@ int main(int argc, char** argv) {
   size_t data_length = sizeof data;
   printf("parser running (%zu bytes)\n", data_length);
 
-  size_t chunk_size = (rand() % data_length - 1) + 1;
-  size_t total_chunks = (data_length / chunk_size) + 1;
+//  size_t chunk_size = (rand() % data_length - 1) + 1;
+  size_t chunk_size = 3;
+  size_t remainder = data_length % chunk_size;
+  size_t total_chunks = (data_length / chunk_size) + (remainder? 1: 0);
+
 
   printf("Data Length: %zd, Total data chunks: %zd\n", data_length, total_chunks);
 
   size_t total = 0;
-  size_t offset = 0;
   for(unsigned i=0; i < total_chunks; i++ ) {
 	  uint8_t* chunk = data + i*chunk_size;
 
-	  if(i == total_chunks -1) {
-		  chunk_size = data_length % chunk_size;
+	  if((i == total_chunks -1) && remainder) {
+		chunk_size = remainder;
 	  }
 
 	  printf("===> Iteration: %d, Offset: %zd, Chunk size: %zd", i, i*chunk_size, chunk_size);
@@ -170,9 +172,24 @@ int main(int argc, char** argv) {
 	      }
 	  } while (rc == MQTT_PARSER_RC_CONTINUE || rc == MQTT_PARSER_RC_WANT_MEMORY);
 
-	  // END CODE TO PARSE A PACKAGE
+	  if(parser.nread != chunk_size) {
+		 printf("Overflow bytes: %zu\n", (chunk_size - parser.nread));
 
-	  offset+= chunk_size;
+		 size_t overflow = (chunk_size - parser.nread);
+	  	 if(overflow > sizeof(parser.stored)) {
+	  		 printf("ERROR: Overflow is too big: %zu\n", overflow);
+	  		 return;
+	  	 }
+
+	  	 for(int x = 0; x < overflow; x++) {
+	  		 parser.stored[x] = data[parser.nread];
+	  		 parser.nread += 1;
+	  	 }
+
+	  	 parser.flags = (parser.flags & 0xfc) | overflow;
+	  }
+
+	  // END CODE TO PARSE A PACKAGE
   }
 
   if(total != data_length) {
@@ -188,6 +205,59 @@ int main(int argc, char** argv) {
   printf("  nread: %zd\n", parser.nread);
   printf("  loops: %d\n", loops);
   printf("\n");
+}
 
-  return 0;
+void test_serialiser() {
+  mqtt_serialiser_t serialiser;
+  size_t message_count = 3;
+  mqtt_message_t messages[message_count];
+  memset(&messages, 0, sizeof(mqtt_message_t) * message_count);
+
+  // PUBLISH message
+  messages[0].common.type = MQTT_TYPE_DISCONNECT;
+//  messages[0].common.type = MQTT_TYPE_PUBLISH;
+//  messages[0].common.qos = MQTT_QOS_AT_LEAST_ONCE;
+//
+  char topic[] = "a/b/c";
+//  messages[0].publish.topic_name.length = strlen(topic);
+//  messages[0].publish.topic_name.data=(uint8_t*)malloc(strlen(topic));
+//  memcpy(messages[0].publish.topic_name.data, topic, strlen(topic));
+//  messages[0].publish.content.length = 3; // NO actual data is assigned just yet.
+//  messages[0].publish.content.data = (uint8_t*)malloc(3);
+//  memcpy(messages[0].publish.content.data, "txt", 3);
+
+  // SUBSCRIBE message
+  messages[1].common.type = MQTT_TYPE_SUBSCRIBE;
+
+  mqtt_topicpair_t* topics = (mqtt_topicpair_t*)malloc(sizeof(mqtt_topicpair_t));
+  topics->name.length = strlen(topic);
+  topics->name.data = (uint8_t*)malloc(topics->name.length);
+  memcpy(topics->name.data, topic, topics->name.length);
+  messages[1].subscribe.topics = topics;
+
+  // PINGRESP
+  messages[2].common.type = MQTT_TYPE_PINGRESP;
+
+  for(int i=0; i < message_count; i++) {
+	  mqtt_message_t* message = &messages[i];
+	  size_t packet_length = mqtt_serialiser_size(&serialiser, message);
+	  uint8_t* packet = (uint8_t*)malloc(packet_length);
+	  memset(packet, 0, packet_length);
+	  mqtt_serialiser_write(&serialiser, message, packet, packet_length);
+
+	  printf("packet length: %zu\n", packet_length);
+	  printf("packet data:   ");
+	  for (int j=0; j<packet_length; ++j) {
+		  printf("%02x ", packet[j]);
+	  }
+	  printf("\n");
+  }
+
+  // TODO: free message...
+}
+
+int main(int argc, char** argv) {
+	test_parser();
+	test_serialiser();
+	return 0;
 }

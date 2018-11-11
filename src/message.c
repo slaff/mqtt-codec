@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "message.h"
 
@@ -48,4 +49,100 @@ void mqtt_message_dump(mqtt_message_t* message) {
     mqtt_buffer_dump(&(message->connect.password));
     printf("\n");
   }
+}
+
+void mqtt_message_free(mqtt_message_t* message, int completely) {
+	switch (message->common.type) {
+	  	// Client to server messages
+	    case MQTT_TYPE_CONNECT: {
+	      free(message->connect.protocol_name.data);
+	      free(message->connect.client_id.data);
+	      free(message->connect.will_topic.data);
+	      free(message->connect.will_message.data);
+	      free(message->connect.username.data);
+	      free(message->connect.password.data);
+
+	      message->connect.protocol_name.data = NULL;
+	      message->connect.client_id.data = NULL;
+	      message->connect.will_topic.data = NULL;
+	      message->connect.will_message.data = NULL;
+	      message->connect.username.data = NULL;
+	      message->connect.password.data = NULL;
+
+	      break;
+	    }
+
+	    case MQTT_TYPE_SUBSCRIBE: {
+	    	mqtt_topicpair_t* cur = message->subscribe.topics;
+			while(cur) {
+				free(cur->name.data);
+				cur->name.data = NULL;
+				mqtt_topicpair_t* last = cur;
+				cur = cur->next;
+				free(last);
+			}
+
+	    	break;
+	    }
+
+	    case MQTT_TYPE_UNSUBSCRIBE: {
+	    	mqtt_topic_t* cur = message->unsubscribe.topics;
+	    	while(cur) {
+	    		mqtt_topic_t* last = cur;
+				cur = cur->next;
+				free(last);
+	    	}
+
+	    	break;
+	    }
+
+	    // Server to client messages
+	    case MQTT_TYPE_CONNACK: {
+	    	break;
+	    }
+
+	    case MQTT_TYPE_SUBACK: {
+	    	mqtt_topicpair_t* cur = message->suback.topics;
+	    	while(cur) {
+	    		mqtt_topicpair_t* last = cur;
+				cur = cur->next;
+				free(last);
+	    	}
+
+	    	break;
+	    }
+
+	    case MQTT_TYPE_UNSUBACK: {
+	    	break;
+		}
+
+	    // Bi-directional messages
+	    case MQTT_TYPE_PUBLISH: {
+	    	free(message->publish.topic_name.data);
+	    	message->publish.topic_name.data = NULL;
+
+	    	free(message->publish.content.data);
+	    	message->publish.content.data = NULL;
+
+	    	break;
+	    }
+
+	    case MQTT_TYPE_PUBACK:
+	    case MQTT_TYPE_PUBREC:
+	    case MQTT_TYPE_PUBREL:
+	    case MQTT_TYPE_PUBCOMP:
+	    // Below are all the message types that must not have variable header and payload
+		case MQTT_TYPE_PINGREQ:
+		case MQTT_TYPE_DISCONNECT:
+		case MQTT_TYPE_PINGRESP:
+			break;
+
+		default: {
+	      return; // Invalid message?
+	    }
+	}
+
+	if(completely) {
+		free(message);
+	}
 }

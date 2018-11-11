@@ -11,6 +11,7 @@ typedef enum mqtt_serialiser_rc_e {
 
 typedef struct mqtt_serialiser_s {
   mqtt_error_t error;
+  size_t sequence;
 } mqtt_serialiser_t;
 
 void mqtt_serialiser_init(mqtt_serialiser_t* serialiser);

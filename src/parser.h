@@ -7,11 +7,6 @@
 #include "errors.h"
 #include "message.h"
 
-#if !(defined(MQTT_ENABLE_CLIENT) && defined(MQTT_ENABLE_SERVER))
-#define MQTT_ENABLE_CLIENT 1
-#define MQTT_ENABLE_SERVER 0
-#endif
-
 typedef enum mqtt_parser_rc_e {
   MQTT_PARSER_RC_INCOMPLETE = 0,
   MQTT_PARSER_RC_ERROR,
@@ -23,8 +18,10 @@ typedef enum mqtt_parser_rc_e {
 typedef enum mqtt_parser_state_e {
   MQTT_PARSER_STATE_INITIAL,
   MQTT_PARSER_STATE_REMAINING_LENGTH,
+  MQTT_PARSER_STATE_REMAINING_LENGTH_DONE,
   MQTT_PARSER_STATE_VARIABLE_HEADER,
 #ifdef MQTT_ENABLE_SERVER
+  // Client to server
   MQTT_PARSER_STATE_CONNECT,
   MQTT_PARSER_STATE_CONNECT_PROTOCOL_NAME,
   MQTT_PARSER_STATE_CONNECT_PROTOCOL_VERSION,
@@ -46,12 +43,15 @@ typedef enum mqtt_parser_state_e {
   MQTT_PARSER_STATE_DISCONNECT,
 #endif /* MQTT_ENABLE_SERVER */
 #ifdef MQTT_ENABLE_CLIENT
+  // Server to client
   MQTT_PARSER_STATE_CONNACK,
   MQTT_PARSER_STATE_SUBACK,
   MQTT_PARSER_STATE_SUBACK_QOS,
   MQTT_PARSER_STATE_UNSUBACK,
   MQTT_PARSER_STATE_PINGRESP,
 #endif /* MQTT_ENABLE_CLIENT */
+
+  // Bi-directional
   MQTT_PARSER_STATE_PUBLISH,
   MQTT_PARSER_STATE_PUBLISH_TOPIC_NAME,
   MQTT_PARSER_STATE_PUBLISH_MESSAGE_ID,
@@ -66,16 +66,20 @@ typedef enum mqtt_parser_state_e {
 } mqtt_parser_state_t;
 
 typedef struct {
-	int(*on_connected)      (void*, mqtt_message_t* );
+	/* In the message the correct type and expected length will be set. */
 	int(*on_message_begin)	(void*, mqtt_message_t* );
 
+	/* If the message is PUBLISH the following data methods will be called */
 	int(*on_data_begin)     (void*, mqtt_message_t* );
     int(*on_data_payload)   (void*, mqtt_message_t*, const char*, size_t);
     int(*on_data_end)       (void*, mqtt_message_t* );
 
+    /* The complete message will be delivered. If PUBLISH the payload will not be set by default. */
     int(*on_message_end)	(void*, mqtt_message_t*);
 
 } mqtt_parser_callbacks_t;
+
+#define MQTT_PARSER_STATE_READ_STRING  (1 << 7)
 
 typedef struct mqtt_parser_s {
   const mqtt_parser_callbacks_t* callbacks;
@@ -84,7 +88,15 @@ typedef struct mqtt_parser_s {
   mqtt_error_t error;
 
   size_t needs;          /* bytes needed to read the full content of a package */
+  size_t string_length;
   size_t nread;          /* bytes read */
+  uint8_t stored[2];     /* stored characters */
+  uint8_t flags;         /*
+  	  	  	  	  	  	   Order: First bit is the on the right, Last bit is on the left.
+   	   	   	   	   	   	   7 - set if a string is started to be read
+   	   	   	   	   	   	   6-2 - unused
+   	   	   	   	   	   	   1-0 - the last two bits are used to specify the number of stored bytes
+   	   	   	   	   	   	   */
 
   char buffer_pending;
   uint8_t* buffer;

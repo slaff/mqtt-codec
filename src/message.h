@@ -5,6 +5,11 @@
 
 #include "buffer.h"
 
+#if !(defined(MQTT_ENABLE_CLIENT) && defined(MQTT_ENABLE_SERVER))
+#define MQTT_ENABLE_CLIENT 1
+#define MQTT_ENABLE_SERVER 0
+#endif
+
 typedef enum mqtt_type_e {
   MQTT_TYPE_CONNECT = 1,
   MQTT_TYPE_CONNACK = 2,
@@ -61,12 +66,14 @@ typedef union mqtt_message_u {
     MQTT_MESSAGE_COMMON_FIELDS
   } common;
 
+
   struct {
     MQTT_MESSAGE_COMMON_FIELDS
 
     mqtt_buffer_t protocol_name;
     uint8_t protocol_version;
 
+    // Client to server
     struct {
       char username_follows;
       char password_follows;
@@ -90,9 +97,52 @@ typedef union mqtt_message_u {
   struct {
     MQTT_MESSAGE_COMMON_FIELDS
 
+    uint16_t message_id;
+    mqtt_topicpair_t* topics;
+  } subscribe;
+
+  struct {
+    MQTT_MESSAGE_COMMON_FIELDS
+
+    uint16_t message_id;
+    mqtt_topic_t* topics;
+  } unsubscribe;
+
+  struct {
+    MQTT_MESSAGE_COMMON_FIELDS
+  } pingreq;
+
+  struct {
+    MQTT_MESSAGE_COMMON_FIELDS
+  } disconnect;
+
+  // Server to client
+  struct {
+    MQTT_MESSAGE_COMMON_FIELDS
+
     uint8_t _unused;
     uint8_t return_code;
   } connack;
+
+  struct {
+    MQTT_MESSAGE_COMMON_FIELDS
+
+    uint16_t message_id;
+    mqtt_topicpair_t* topics;
+  } suback;
+
+  struct {
+    MQTT_MESSAGE_COMMON_FIELDS
+
+    uint16_t message_id;
+  } unsuback;
+
+  struct {
+    MQTT_MESSAGE_COMMON_FIELDS
+  } pingresp;
+
+
+  // Bi-directional
 
   struct {
     MQTT_MESSAGE_COMMON_FIELDS
@@ -127,47 +177,10 @@ typedef union mqtt_message_u {
     uint16_t message_id;
   } pubcomp;
 
-  struct {
-    MQTT_MESSAGE_COMMON_FIELDS
-
-    uint16_t message_id;
-    mqtt_topicpair_t* topics;
-  } subscribe;
-
-  struct {
-    MQTT_MESSAGE_COMMON_FIELDS
-
-    uint16_t message_id;
-    mqtt_topicpair_t* topics;
-  } suback;
-
-  struct {
-    MQTT_MESSAGE_COMMON_FIELDS
-
-    uint16_t message_id;
-    mqtt_topic_t* topics;
-  } unsubscribe;
-
-  struct {
-    MQTT_MESSAGE_COMMON_FIELDS
-
-    uint16_t message_id;
-  } unsuback;
-
-  struct {
-    MQTT_MESSAGE_COMMON_FIELDS
-  } pingreq;
-
-  struct {
-    MQTT_MESSAGE_COMMON_FIELDS
-  } pingresp;
-
-  struct {
-    MQTT_MESSAGE_COMMON_FIELDS
-  } disconnect;
 } mqtt_message_t;
 
 void mqtt_message_init(mqtt_message_t* message);
 void mqtt_message_dump(mqtt_message_t* message);
+void mqtt_message_free(mqtt_message_t* message, int completely);
 
 #endif
