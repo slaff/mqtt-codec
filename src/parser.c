@@ -1,10 +1,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
-#include <stdlib.h>
 
-#include "errors.h"
-#include "message.h"
+#include "platform.h"
 
 #include "parser.h"
 
@@ -22,7 +20,7 @@
 	parser->flags = (parser->flags & 0xfc); \
 }
 
-#define READ_STRING(into) { \
+#define READ_STRING(into); { \
 	if(!(parser->flags & MQTT_PARSER_STATE_READ_STRING)) { \
 		READ_BYTES(2); \
         \
@@ -75,7 +73,7 @@ void mqtt_parser_buffer(mqtt_parser_t* parser, uint8_t* buffer, size_t buffer_le
   parser->buffer_length = buffer_length;
 }
 
-mqtt_parser_rc_t mqtt_parser_execute(mqtt_parser_t* parser, mqtt_message_t* message, uint8_t* data, size_t len) {
+static mqtt_parser_rc_t mqtt_parser_process(mqtt_parser_t* parser, mqtt_message_t* message, uint8_t* data, size_t len) {
   do {
     switch (parser->state) {
       case MQTT_PARSER_STATE_INITIAL: {
@@ -225,7 +223,7 @@ mqtt_parser_rc_t mqtt_parser_execute(mqtt_parser_t* parser, mqtt_message_t* mess
       }
 
       case MQTT_PARSER_STATE_CONNECT_CLIENT_IDENTIFIER: {
-        READ_STRING(message->connect.client_id)
+        READ_STRING(message->connect.client_id);
 
         parser->state = MQTT_PARSER_STATE_CONNECT_WILL_TOPIC;
 
@@ -234,7 +232,7 @@ mqtt_parser_rc_t mqtt_parser_execute(mqtt_parser_t* parser, mqtt_message_t* mess
 
       case MQTT_PARSER_STATE_CONNECT_WILL_TOPIC: {
         if (message->connect.flags.will) {
-          READ_STRING(message->connect.will_topic)
+          READ_STRING(message->connect.will_topic);
         }
 
         parser->state = MQTT_PARSER_STATE_CONNECT_WILL_MESSAGE;
@@ -288,7 +286,7 @@ mqtt_parser_rc_t mqtt_parser_execute(mqtt_parser_t* parser, mqtt_message_t* mess
     		  next = message->subscribe.topics;
     	  }
 
-    	  message->subscribe.topics = (mqtt_topicpair_t*)malloc(sizeof(mqtt_topicpair_t));
+    	  message->subscribe.topics = (mqtt_topicpair_t*)MQTT_MALLOC(sizeof(mqtt_topicpair_t));
 		  memset(message->subscribe.topics, 0, sizeof(mqtt_topicpair_t));
 		  message->subscribe.topics->next = next;
 
@@ -334,7 +332,7 @@ mqtt_parser_rc_t mqtt_parser_execute(mqtt_parser_t* parser, mqtt_message_t* mess
 			  next = message->unsubscribe.topics;
 		  }
 
-		  message->unsubscribe.topics = (mqtt_topic_t*)malloc(sizeof(mqtt_topic_t));
+		  message->unsubscribe.topics = (mqtt_topic_t*)MQTT_MALLOC(sizeof(mqtt_topic_t));
 		  memset(message->unsubscribe.topics, 0, sizeof(mqtt_topic_t));
 		  message->unsubscribe.topics->next = next;
 
@@ -386,7 +384,7 @@ mqtt_parser_rc_t mqtt_parser_execute(mqtt_parser_t* parser, mqtt_message_t* mess
 			  next = message->suback.topics;
 		  }
 
-		  message->suback.topics = (mqtt_topicpair_t*)malloc(sizeof(mqtt_topicpair_t));
+		  message->suback.topics = (mqtt_topicpair_t*)MQTT_MALLOC(sizeof(mqtt_topicpair_t));
 		  memset(message->suback.topics, 0, sizeof(mqtt_topicpair_t));
 		  message->suback.topics->next = next;
 
@@ -417,7 +415,7 @@ mqtt_parser_rc_t mqtt_parser_execute(mqtt_parser_t* parser, mqtt_message_t* mess
       }
 
       case MQTT_PARSER_STATE_PUBLISH_TOPIC_NAME: {
-    	READ_STRING(message->publish.topic_name)
+    	READ_STRING(message->publish.topic_name);
     	parser->needs -= message->publish.topic_name.length + 2;
 
 		// The Packet Identifier field is only present in PUBLISH Packets where the QoS level is 1 or 2.
@@ -535,3 +533,38 @@ DONE: {
     }
   } while (1);
 }
+
+
+mqtt_parser_rc_t mqtt_parser_execute(mqtt_parser_t* parser, mqtt_message_t* message, uint8_t* data, size_t len) {
+	int rc = 0;
+
+	parser->nread = 0;
+
+	// main loop
+	do {
+		 rc = mqtt_parser_process(parser, message, data, len);
+		 if (rc == MQTT_PARSER_RC_WANT_MEMORY) {
+			mqtt_parser_buffer(parser, MQTT_MALLOC(parser->buffer_length), parser->buffer_length);
+		 }
+	} while (rc == MQTT_PARSER_RC_CONTINUE || rc == MQTT_PARSER_RC_WANT_MEMORY);
+
+	if(parser->nread != len) {
+		 MQTT_DEBUGF("Overflow bytes: %zu\n", (len - parser->nread));
+
+		 size_t overflow = (len - parser->nread);
+		 if(overflow > sizeof(parser->stored)) {
+			 MQTT_DEBUGF("ERROR: Overflow is too big: %zu\n", overflow);
+			 return MQTT_PARSER_RC_ERROR;
+		 }
+
+		 for(int x = 0; x < overflow; x++) {
+			 parser->stored[x] = data[parser->nread];
+			 parser->nread += 1;
+		 }
+
+		 parser->flags = (parser->flags & 0xfc) | overflow;
+	}
+
+	return rc;
+}
+

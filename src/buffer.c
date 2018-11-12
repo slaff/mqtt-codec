@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "platform.h"
+
 #include "buffer.h"
 
 void mqtt_buffer_dump(mqtt_buffer_t* buffer) {

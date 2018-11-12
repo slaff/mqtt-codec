@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "platform.h"
+
 #include "message.h"
 
 void mqtt_message_init(mqtt_message_t* message) {
@@ -55,12 +57,12 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
 	switch (message->common.type) {
 	  	// Client to server messages
 	    case MQTT_TYPE_CONNECT: {
-	      free(message->connect.protocol_name.data);
-	      free(message->connect.client_id.data);
-	      free(message->connect.will_topic.data);
-	      free(message->connect.will_message.data);
-	      free(message->connect.username.data);
-	      free(message->connect.password.data);
+	      MQTT_FREE(message->connect.protocol_name.data);
+	      MQTT_FREE(message->connect.client_id.data);
+	      MQTT_FREE(message->connect.will_topic.data);
+	      MQTT_FREE(message->connect.will_message.data);
+	      MQTT_FREE(message->connect.username.data);
+	      MQTT_FREE(message->connect.password.data);
 
 	      message->connect.protocol_name.data = NULL;
 	      message->connect.client_id.data = NULL;
@@ -75,11 +77,11 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
 	    case MQTT_TYPE_SUBSCRIBE: {
 	    	mqtt_topicpair_t* cur = message->subscribe.topics;
 			while(cur) {
-				free(cur->name.data);
+				MQTT_FREE(cur->name.data);
 				cur->name.data = NULL;
 				mqtt_topicpair_t* last = cur;
 				cur = cur->next;
-				free(last);
+				MQTT_FREE(last);
 			}
 
 	    	break;
@@ -90,7 +92,7 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
 	    	while(cur) {
 	    		mqtt_topic_t* last = cur;
 				cur = cur->next;
-				free(last);
+				MQTT_FREE(last);
 	    	}
 
 	    	break;
@@ -106,7 +108,7 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
 	    	while(cur) {
 	    		mqtt_topicpair_t* last = cur;
 				cur = cur->next;
-				free(last);
+				MQTT_FREE(last);
 	    	}
 
 	    	break;
@@ -118,10 +120,10 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
 
 	    // Bi-directional messages
 	    case MQTT_TYPE_PUBLISH: {
-	    	free(message->publish.topic_name.data);
+	    	MQTT_FREE(message->publish.topic_name.data);
 	    	message->publish.topic_name.data = NULL;
 
-	    	free(message->publish.content.data);
+	    	MQTT_FREE(message->publish.content.data);
 	    	message->publish.content.data = NULL;
 
 	    	break;
@@ -143,6 +145,6 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
 	}
 
 	if(completely) {
-		free(message);
+		MQTT_FREE(message);
 	}
 }

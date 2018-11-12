@@ -1,5 +1,7 @@
 #include <stddef.h>
 
+#include "platform.h"
+
 #include "errors.h"
 
 const char* mqtt_error_strings[] = {

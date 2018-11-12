@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "message.h"
+#include "platform.h"
 
 #include "serialiser.h"
 
