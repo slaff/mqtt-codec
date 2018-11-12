@@ -206,6 +206,7 @@ void test_serialiser() {
   mqtt_topicpair_t* topics = (mqtt_topicpair_t*)malloc(sizeof(mqtt_topicpair_t));
   topics->name.length      = strlen(topic);
   topics->name.data        = (uint8_t*)malloc(topics->name.length);
+  topics->next             = NULL;
   memcpy(topics->name.data, topic, topics->name.length);
   messages[1].subscribe.topics = topics;
 
