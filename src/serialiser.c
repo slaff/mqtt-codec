@@ -35,22 +35,22 @@
 
 #include "serialiser.h"
 
-#define WRITE_STRING(name)                                                                                             \
-  {                                                                                                                    \
-    buffer[offset++] = name.length / 0xff;                                                                             \
-    buffer[offset++] = name.length & 0xff;                                                                             \
-    memcpy(&(buffer[offset]), name.data, name.length);                                                                 \
-    offset += name.length;                                                                                             \
+#define WRITE_STRING(name)                             \
+  {                                                    \
+    buffer[offset++] = name.length / 0xff;             \
+    buffer[offset++] = name.length & 0xff;             \
+    memcpy(&(buffer[offset]), name.data, name.length); \
+    offset += name.length;                             \
   }
 
-#define WRITE_ID(id)                                                                                                   \
-  {                                                                                                                    \
-    size_t sequence = id;                                                                                              \
-    if(!sequence) {                                                                                                    \
-      sequence = serialiser->sequence++;                                                                               \
-    }                                                                                                                  \
-    buffer[offset++] = sequence >> 8;                                                                                  \
-    buffer[offset++] = sequence & 0xFF;                                                                                \
+#define WRITE_ID(id)                     \
+  {                                      \
+    size_t sequence = id;                \
+    if(!sequence) {                      \
+      sequence = serialiser->sequence++; \
+    }                                    \
+    buffer[offset++] = sequence >> 8;    \
+    buffer[offset++] = sequence & 0xFF;  \
   }
 
 void mqtt_serialiser_init(mqtt_serialiser_t* serialiser) {
@@ -244,7 +244,7 @@ mqtt_serialiser_rc_t mqtt_serialiser_write(mqtt_serialiser_t* serialiser, mqtt_m
       while(cur) {
         WRITE_STRING(cur->name);
         buffer[offset++] = cur->qos;
-        cur = cur->next;
+        cur              = cur->next;
       }
 
       break;
@@ -279,7 +279,7 @@ mqtt_serialiser_rc_t mqtt_serialiser_write(mqtt_serialiser_t* serialiser, mqtt_m
       mqtt_topicpair_t* cur = message->suback.topics;
       while(cur) {
         buffer[offset++] = cur->qos;
-        cur = cur->next;
+        cur              = cur->next;
       }
 
       break;

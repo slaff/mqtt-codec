@@ -42,36 +42,36 @@
 #endif
 
 typedef enum mqtt_type_e {
-  MQTT_TYPE_CONNECT = 1,
-  MQTT_TYPE_CONNACK = 2,
-  MQTT_TYPE_PUBLISH = 3,
-  MQTT_TYPE_PUBACK = 4,
-  MQTT_TYPE_PUBREC = 5,
-  MQTT_TYPE_PUBREL = 6,
-  MQTT_TYPE_PUBCOMP = 7,
-  MQTT_TYPE_SUBSCRIBE = 8,
-  MQTT_TYPE_SUBACK = 9,
+  MQTT_TYPE_CONNECT     = 1,
+  MQTT_TYPE_CONNACK     = 2,
+  MQTT_TYPE_PUBLISH     = 3,
+  MQTT_TYPE_PUBACK      = 4,
+  MQTT_TYPE_PUBREC      = 5,
+  MQTT_TYPE_PUBREL      = 6,
+  MQTT_TYPE_PUBCOMP     = 7,
+  MQTT_TYPE_SUBSCRIBE   = 8,
+  MQTT_TYPE_SUBACK      = 9,
   MQTT_TYPE_UNSUBSCRIBE = 10,
-  MQTT_TYPE_UNSUBACK = 11,
-  MQTT_TYPE_PINGREQ = 12,
-  MQTT_TYPE_PINGRESP = 13,
-  MQTT_TYPE_DISCONNECT = 14,
+  MQTT_TYPE_UNSUBACK    = 11,
+  MQTT_TYPE_PINGREQ     = 12,
+  MQTT_TYPE_PINGRESP    = 13,
+  MQTT_TYPE_DISCONNECT  = 14,
 } mqtt_type_t;
 
 typedef enum mqtt_retain_e {
   MQTT_RETAIN_FALSE = 0,
-  MQTT_RETAIN_TRUE = 1,
+  MQTT_RETAIN_TRUE  = 1,
 } mqtt_retain_t;
 
 typedef enum mqtt_qos_e {
-  MQTT_QOS_AT_MOST_ONCE = 0,
+  MQTT_QOS_AT_MOST_ONCE  = 0,
   MQTT_QOS_AT_LEAST_ONCE = 1,
-  MQTT_QOS_EXACTLY_ONCE = 2,
+  MQTT_QOS_EXACTLY_ONCE  = 2,
 } mqtt_qos_t;
 
 typedef enum mqtt_dup_e {
   MQTT_DUP_FALSE = 0,
-  MQTT_DUP_TRUE = 1,
+  MQTT_DUP_TRUE  = 1,
 } mqtt_dup_t;
 
 typedef struct mqtt_topic_s {
@@ -85,11 +85,11 @@ typedef struct mqtt_topicpair_s {
   mqtt_qos_t qos;
 } mqtt_topicpair_t;
 
-#define MQTT_MESSAGE_COMMON_FIELDS                                                                                     \
-  mqtt_retain_t retain;                                                                                                \
-  mqtt_qos_t qos;                                                                                                      \
-  mqtt_dup_t dup;                                                                                                      \
-  mqtt_type_t type;                                                                                                    \
+#define MQTT_MESSAGE_COMMON_FIELDS \
+  mqtt_retain_t retain;            \
+  mqtt_qos_t qos;                  \
+  mqtt_dup_t dup;                  \
+  mqtt_type_t type;                \
   size_t length;
 
 typedef union mqtt_message_u {

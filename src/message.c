@@ -95,11 +95,11 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
       MQTT_FREE(message->connect.password.data);
 
       message->connect.protocol_name.data = NULL;
-      message->connect.client_id.data = NULL;
-      message->connect.will_topic.data = NULL;
-      message->connect.will_message.data = NULL;
-      message->connect.username.data = NULL;
-      message->connect.password.data = NULL;
+      message->connect.client_id.data     = NULL;
+      message->connect.will_topic.data    = NULL;
+      message->connect.will_message.data  = NULL;
+      message->connect.username.data      = NULL;
+      message->connect.password.data      = NULL;
 
       break;
     }
@@ -108,9 +108,9 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
       mqtt_topicpair_t* cur = message->subscribe.topics;
       while(cur) {
         MQTT_FREE(cur->name.data);
-        cur->name.data = NULL;
+        cur->name.data         = NULL;
         mqtt_topicpair_t* last = cur;
-        cur = cur->next;
+        cur                    = cur->next;
         MQTT_FREE(last);
       }
 
@@ -121,7 +121,7 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
       mqtt_topic_t* cur = message->unsubscribe.topics;
       while(cur) {
         mqtt_topic_t* last = cur;
-        cur = cur->next;
+        cur                = cur->next;
         MQTT_FREE(last);
       }
 
@@ -137,7 +137,7 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
       mqtt_topicpair_t* cur = message->suback.topics;
       while(cur) {
         mqtt_topicpair_t* last = cur;
-        cur = cur->next;
+        cur                    = cur->next;
         MQTT_FREE(last);
       }
 

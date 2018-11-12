@@ -36,9 +36,6 @@
 #ifndef MQTT_PLATFORM_H
 #define MQTT_PLATFORM_H
 
-#ifndef SRC_PLATFORM_H_
-#define SRC_PLATFORM_H_
-
 #ifndef MQTT_DEBUGF
 #include <stdio.h>
 #define MQTT_DEBUGF(...) printf(__VA_ARGS__)

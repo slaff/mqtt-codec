@@ -131,10 +131,10 @@ void test_parser() {
   mqtt_parser_callbacks_t callbacks;
   memset(&callbacks, 0, sizeof(callbacks));
   callbacks.on_message_begin = on_message_begin;
-  callbacks.on_data_begin = on_data_begin;
-  callbacks.on_data_payload = on_data_payload;
-  callbacks.on_data_end = on_data_end;
-  callbacks.on_message_end = on_message_end;
+  callbacks.on_data_begin    = on_data_begin;
+  callbacks.on_data_payload  = on_data_payload;
+  callbacks.on_data_end      = on_data_end;
+  callbacks.on_message_end   = on_message_end;
 
   mqtt_parser_init(&parser, &callbacks);
   mqtt_serialiser_init(&serialiser);
@@ -146,8 +146,8 @@ void test_parser() {
   printf("parser running (%zu bytes)\n", data_length);
 
   //  size_t chunk_size = (rand() % data_length - 1) + 1;
-  size_t chunk_size = 3;
-  size_t remainder = data_length % chunk_size;
+  size_t chunk_size   = 3;
+  size_t remainder    = data_length % chunk_size;
   size_t total_chunks = (data_length / chunk_size) + (remainder ? 1 : 0);
 
   printf("Data Length: %zd, Total data chunks: %zd\n", data_length, total_chunks);
@@ -160,45 +160,11 @@ void test_parser() {
       chunk_size = remainder;
     }
 
-    printf("===> Iteration: %d, Offset: %zd, Chunk size: %zd", i, i * chunk_size, chunk_size);
+    printf("===> Iteration: %d, Offset: %zd, Chunk size: %zd <===\n", i, i * chunk_size, chunk_size);
     total += chunk_size;
 
-    // CODE TO PARSE A DATA CHUNK INTO MQTT MESSAGE
-    parser.nread = 0;
-
-    // main loop
-    do {
-      printf("  loop %d\n", ++loops);
-      printf("    state: %d\n", parser.state);
-      printf("    offset: %zu\n", parser.nread);
-
-      rc = mqtt_parser_execute(&parser, &message, chunk, chunk_size);
-      printf("    rc: %d\n", rc);
-
-      if(rc == MQTT_PARSER_RC_WANT_MEMORY) {
-        printf("    bytes requested: %zu\n", parser.buffer_length);
-        mqtt_parser_buffer(&parser, malloc(parser.buffer_length), parser.buffer_length);
-      }
-    } while(rc == MQTT_PARSER_RC_CONTINUE || rc == MQTT_PARSER_RC_WANT_MEMORY);
-
-    if(parser.nread != chunk_size) {
-      printf("Overflow bytes: %zu\n", (chunk_size - parser.nread));
-
-      size_t overflow = (chunk_size - parser.nread);
-      if(overflow > sizeof(parser.stored)) {
-        printf("ERROR: Overflow is too big: %zu\n", overflow);
-        return;
-      }
-
-      for(int x = 0; x < overflow; x++) {
-        parser.stored[x] = data[parser.nread];
-        parser.nread += 1;
-      }
-
-      parser.flags = (parser.flags & 0xfc) | overflow;
-    }
-
-    // END CODE TO PARSE A PACKAGE
+    rc = mqtt_parser_execute(&parser, &message, chunk, chunk_size);
+    loops++;
   }
 
   if(total != data_length) {
@@ -223,24 +189,23 @@ void test_serialiser() {
   memset(&messages, 0, sizeof(mqtt_message_t) * message_count);
 
   // PUBLISH message
-  messages[0].common.type = MQTT_TYPE_DISCONNECT;
-  //  messages[0].common.type = MQTT_TYPE_PUBLISH;
-  //  messages[0].common.qos = MQTT_QOS_AT_LEAST_ONCE;
-  //
-  char topic[] = "a/b/c";
-  //  messages[0].publish.topic_name.length = strlen(topic);
-  //  messages[0].publish.topic_name.data=(uint8_t*)malloc(strlen(topic));
-  //  memcpy(messages[0].publish.topic_name.data, topic, strlen(topic));
-  //  messages[0].publish.content.length = 3; // NO actual data is assigned just yet.
-  //  messages[0].publish.content.data = (uint8_t*)malloc(3);
-  //  memcpy(messages[0].publish.content.data, "txt", 3);
+  messages[0].common.type = MQTT_TYPE_PUBLISH;
+  messages[0].common.qos  = MQTT_QOS_AT_LEAST_ONCE;
+
+  char topic[]                          = "a/b/c";
+  messages[0].publish.topic_name.length = strlen(topic);
+  messages[0].publish.topic_name.data   = (uint8_t*)malloc(strlen(topic));
+  memcpy(messages[0].publish.topic_name.data, topic, strlen(topic));
+  messages[0].publish.content.length = 3; // NO actual data is assigned just yet.
+  messages[0].publish.content.data   = (uint8_t*)malloc(3);
+  memcpy(messages[0].publish.content.data, "txt", 3);
 
   // SUBSCRIBE message
   messages[1].common.type = MQTT_TYPE_SUBSCRIBE;
 
   mqtt_topicpair_t* topics = (mqtt_topicpair_t*)malloc(sizeof(mqtt_topicpair_t));
-  topics->name.length = strlen(topic);
-  topics->name.data = (uint8_t*)malloc(topics->name.length);
+  topics->name.length      = strlen(topic);
+  topics->name.data        = (uint8_t*)malloc(topics->name.length);
   memcpy(topics->name.data, topic, topics->name.length);
   messages[1].subscribe.topics = topics;
 
@@ -249,8 +214,8 @@ void test_serialiser() {
 
   for(int i = 0; i < message_count; i++) {
     mqtt_message_t* message = &messages[i];
-    size_t packet_length = mqtt_serialiser_size(&serialiser, message);
-    uint8_t* packet = (uint8_t*)malloc(packet_length);
+    size_t packet_length    = mqtt_serialiser_size(&serialiser, message);
+    uint8_t* packet         = (uint8_t*)malloc(packet_length);
     memset(packet, 0, packet_length);
     mqtt_serialiser_write(&serialiser, message, packet, packet_length);
 
@@ -260,9 +225,9 @@ void test_serialiser() {
       printf("%02x ", packet[j]);
     }
     printf("\n");
-  }
 
-  // TODO: free message...
+    mqtt_message_free(message, 0);
+  }
 }
 
 int main(int argc, char** argv) {
