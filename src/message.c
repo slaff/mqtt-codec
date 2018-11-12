@@ -113,6 +113,7 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
         cur                    = cur->next;
         MQTT_FREE(last);
       }
+      message->subscribe.topics = NULL;
 
       break;
     }
@@ -124,6 +125,7 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
         cur                = cur->next;
         MQTT_FREE(last);
       }
+      message->unsubscribe.topics = NULL;
 
       break;
     }
@@ -140,6 +142,7 @@ void mqtt_message_free(mqtt_message_t* message, int completely) {
         cur                    = cur->next;
         MQTT_FREE(last);
       }
+      message->suback.topics = NULL;
 
       break;
     }

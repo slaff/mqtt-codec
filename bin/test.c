@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "platform.h"
 #include "message.h"
 #include "parser.h"
 #include "serialiser.h"
@@ -194,18 +195,18 @@ void test_serialiser() {
 
   char topic[]                          = "a/b/c";
   messages[0].publish.topic_name.length = strlen(topic);
-  messages[0].publish.topic_name.data   = (uint8_t*)malloc(strlen(topic));
+  messages[0].publish.topic_name.data   = (uint8_t*)MQTT_MALLOC(strlen(topic));
   memcpy(messages[0].publish.topic_name.data, topic, strlen(topic));
   messages[0].publish.content.length = 3; // NO actual data is assigned just yet.
-  messages[0].publish.content.data   = (uint8_t*)malloc(3);
+  messages[0].publish.content.data   = (uint8_t*)MQTT_MALLOC(3);
   memcpy(messages[0].publish.content.data, "txt", 3);
 
   // SUBSCRIBE message
   messages[1].common.type = MQTT_TYPE_SUBSCRIBE;
 
-  mqtt_topicpair_t* topics = (mqtt_topicpair_t*)malloc(sizeof(mqtt_topicpair_t));
+  mqtt_topicpair_t* topics = (mqtt_topicpair_t*)MQTT_MALLOC(sizeof(mqtt_topicpair_t));
   topics->name.length      = strlen(topic);
-  topics->name.data        = (uint8_t*)malloc(topics->name.length);
+  topics->name.data        = (uint8_t*)MQTT_MALLOC(topics->name.length);
   topics->next             = NULL;
   memcpy(topics->name.data, topic, topics->name.length);
   messages[1].subscribe.topics = topics;
@@ -216,13 +217,12 @@ void test_serialiser() {
   for(int i = 0; i < message_count; i++) {
     mqtt_message_t* message = &messages[i];
     size_t packet_length    = mqtt_serialiser_size(&serialiser, message);
-    uint8_t* packet         = (uint8_t*)malloc(packet_length);
-    memset(packet, 0, packet_length);
+    uint8_t packet[packet_length];
     mqtt_serialiser_write(&serialiser, message, packet, packet_length);
 
     printf("packet length: %zu\n", packet_length);
     printf("packet data:   ");
-    for(int j = 0; j < packet_length; ++j) {
+    for(int j = 0; j < packet_length; j++) {
       printf("%02x ", packet[j]);
     }
     printf("\n");
