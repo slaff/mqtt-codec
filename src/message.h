@@ -36,11 +36,6 @@
 
 #include "buffer.h"
 
-#if !(defined(MQTT_ENABLE_CLIENT) && defined(MQTT_ENABLE_SERVER))
-#define MQTT_ENABLE_CLIENT 1
-#define MQTT_ENABLE_SERVER 0
-#endif
-
 typedef enum mqtt_type_e {
   MQTT_TYPE_CONNECT     = 1,
   MQTT_TYPE_CONNACK     = 2,

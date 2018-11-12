@@ -36,6 +36,11 @@
 #ifndef MQTT_PLATFORM_H
 #define MQTT_PLATFORM_H
 
+#if !(defined(MQTT_ENABLE_CLIENT) && defined(MQTT_ENABLE_SERVER))
+#define MQTT_ENABLE_CLIENT 1
+#define MQTT_ENABLE_SERVER 0
+#endif
+
 #ifndef MQTT_DEBUGF
 #include <stdio.h>
 #define MQTT_DEBUGF(...) printf(__VA_ARGS__)
