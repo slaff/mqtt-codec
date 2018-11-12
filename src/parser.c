@@ -342,6 +342,7 @@ static mqtt_parser_rc_t mqtt_parser_process(mqtt_parser_t* parser, mqtt_message_
         parser->needs -= 1;
 
         if((!parser->needs)) {
+          REVERSE_LINKED_LIST(mqtt_topicpair_t, &message->subscribe.topics)
           goto DONE;
         }
 
@@ -379,6 +380,7 @@ static mqtt_parser_rc_t mqtt_parser_process(mqtt_parser_t* parser, mqtt_message_
         parser->needs -= message->unsubscribe.topics->name.length + 2;
 
         if(!parser->needs) {
+          REVERSE_LINKED_LIST(mqtt_topic_t, &message->unsubscribe.topics)
           goto DONE;
         }
 
@@ -424,6 +426,7 @@ static mqtt_parser_rc_t mqtt_parser_process(mqtt_parser_t* parser, mqtt_message_
           parser->needs -= 1;
 
           if(!parser->needs) {
+            REVERSE_LINKED_LIST(mqtt_topicpair_t, &message->suback.topics);
             goto DONE;
           }
 

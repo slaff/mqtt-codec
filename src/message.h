@@ -36,6 +36,20 @@
 
 #include "buffer.h"
 
+#define REVERSE_LINKED_LIST(TYPE, HEAD) \
+  {                                     \
+    TYPE* prev    = NULL;               \
+    TYPE* current = *HEAD;              \
+    TYPE* next;                         \
+    while(current != NULL) {            \
+      next          = current->next;    \
+      current->next = prev;             \
+      prev          = current;          \
+      current       = next;             \
+    }                                   \
+    *HEAD = prev;                       \
+  }
+
 typedef enum mqtt_type_e {
   MQTT_TYPE_CONNECT     = 1,
   MQTT_TYPE_CONNACK     = 2,
