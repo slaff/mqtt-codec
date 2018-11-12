@@ -17,3 +17,12 @@ bin/test.o: bin/test.c
 test: bin/test
 bin/test: src/errors.o src/buffer.o src/message.o src/parser.o src/serialiser.o bin/test.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -I../src -o bin/test.exe src/errors.o src/buffer.o src/message.o src/parser.o src/serialiser.o bin/test.o
+	
+
+# Files that should follow our coding standards
+CS_FILES := $(shell find . -name '*.c' -or -name '*.h')
+
+cs:
+	for FILE in $(CS_FILES); do \
+		clang-format -i -style=file $$FILE; \
+	done

@@ -29,19 +29,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MQTT_ERRORS_H
-#define MQTT_ERRORS_H
+/*
+ * This file should be adapted to your platform.
+ */
 
-typedef enum mqtt_error_e {
-  MQTT_ERROR_NONE = 0,
-  MQTT_ERROR_PARSER_INVALID_STATE,
-  MQTT_ERROR_PARSER_INVALID_REMAINING_LENGTH,
-  MQTT_ERROR_PARSER_INVALID_MESSAGE_ID,
-  MQTT_ERROR_PARSER_CALLBACK_FAILED,
-  MQTT_ERROR_SERIALISER_INVALID_MESSAGE_ID,
+#ifndef MQTT_PLATFORM_H
+#define MQTT_PLATFORM_H
 
-} mqtt_error_t;
+#ifndef SRC_PLATFORM_H_
+#define SRC_PLATFORM_H_
 
-const char* mqtt_error_string(mqtt_error_t error);
-
+#ifndef MQTT_DEBUGF
+#include <stdio.h>
+#define MQTT_DEBUGF(...) printf(__VA_ARGS__)
 #endif
+
+#ifndef MQTT_MALLOC
+#include <stdlib.h>
+#define MQTT_MALLOC(A) malloc(A)
+#endif
+
+#ifndef MQTT_FREE
+#include <stdlib.h>
+#define MQTT_FREE(A) free(A)
+#endif
+
+#endif /* MQTT_PLATFORM_H */
