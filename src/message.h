@@ -223,7 +223,7 @@ typedef union mqtt_message_u {
 
 void mqtt_message_init(mqtt_message_t* message);
 void mqtt_message_dump(mqtt_message_t* message);
-void mqtt_message_free(mqtt_message_t* message, int completely);
+void mqtt_message_clear(mqtt_message_t* message, int completely);
 
 #ifdef __cplusplus
 }

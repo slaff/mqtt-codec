@@ -227,7 +227,7 @@ void test_serialiser() {
     }
     printf("\n");
 
-    mqtt_message_free(message, 0);
+    mqtt_message_clear(message, 0);
   }
 }
 

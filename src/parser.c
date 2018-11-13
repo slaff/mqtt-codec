@@ -549,7 +549,7 @@ static mqtt_parser_rc_t mqtt_parser_process(mqtt_parser_t* parser, mqtt_message_
 
       DONE : {
         int rc = parser->callbacks->on_message_end(parser->data, message);
-        mqtt_message_free(message, 0);
+        mqtt_message_clear(message, 0);
         if(rc) {
           return rc;
         }

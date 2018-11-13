@@ -83,7 +83,11 @@ void mqtt_message_dump(mqtt_message_t* message) {
   }
 }
 
-void mqtt_message_free(mqtt_message_t* message, int completely) {
+void mqtt_message_clear(mqtt_message_t* message, int completely) {
+  if(!message) {
+    return;
+  }
+
   switch(message->common.type) {
     // Client to server messages
     case MQTT_TYPE_CONNECT: {
