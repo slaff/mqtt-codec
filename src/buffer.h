@@ -34,6 +34,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct mqtt_buffer_s {
   uint32_t length;
   uint8_t* data;
@@ -42,5 +46,9 @@ typedef struct mqtt_buffer_s {
 void mqtt_buffer_dump(mqtt_buffer_t* buffer);
 void mqtt_buffer_dump_ascii(mqtt_buffer_t* buffer);
 void mqtt_buffer_dump_hex(mqtt_buffer_t* buffer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

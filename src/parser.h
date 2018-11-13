@@ -38,6 +38,10 @@
 #include "errors.h"
 #include "message.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum mqtt_parser_rc_e {
   MQTT_PARSER_RC_INCOMPLETE = 0,
   MQTT_PARSER_RC_ERROR,
@@ -142,5 +146,9 @@ typedef struct mqtt_parser_s {
 void mqtt_parser_init(mqtt_parser_t* parser, mqtt_parser_callbacks_t* callbacks);
 void mqtt_parser_buffer(mqtt_parser_t* parser, uint8_t* buffer, size_t buffer_length);
 mqtt_parser_rc_t mqtt_parser_execute(mqtt_parser_t* parser, mqtt_message_t* message, uint8_t* data, size_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

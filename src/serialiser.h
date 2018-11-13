@@ -35,6 +35,10 @@
 #include "errors.h"
 #include "message.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum mqtt_serialiser_rc_e {
   MQTT_SERIALISER_RC_ERROR,
   MQTT_SERIALISER_RC_SUCCESS,
@@ -49,5 +53,8 @@ void mqtt_serialiser_init(mqtt_serialiser_t* serialiser);
 size_t mqtt_serialiser_size(mqtt_serialiser_t* serialiser, mqtt_message_t* message);
 mqtt_serialiser_rc_t mqtt_serialiser_write(mqtt_serialiser_t* serialiser, mqtt_message_t* message, uint8_t* buffer,
                                            size_t len);
+#ifdef __cplusplus
+}
+#endif
 
 #endif

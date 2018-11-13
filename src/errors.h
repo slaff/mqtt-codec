@@ -32,6 +32,10 @@
 #ifndef MQTT_ERRORS_H
 #define MQTT_ERRORS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum mqtt_error_e {
   MQTT_ERROR_NONE = 0,
   MQTT_ERROR_PARSER_INVALID_STATE,
@@ -43,5 +47,9 @@ typedef enum mqtt_error_e {
 } mqtt_error_t;
 
 const char* mqtt_error_string(mqtt_error_t error);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
