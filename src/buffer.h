@@ -43,9 +43,11 @@ typedef struct mqtt_buffer_s {
   uint8_t* data;
 } mqtt_buffer_t;
 
+#ifdef DEBUG
 void mqtt_buffer_dump(mqtt_buffer_t* buffer);
 void mqtt_buffer_dump_ascii(mqtt_buffer_t* buffer);
 void mqtt_buffer_dump_hex(mqtt_buffer_t* buffer);
+#endif
 
 #ifdef __cplusplus
 }

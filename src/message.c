@@ -40,6 +40,7 @@ void mqtt_message_init(mqtt_message_t* message) {
   memset(message, 0, sizeof(mqtt_message_t));
 }
 
+#ifdef DEBUG
 void mqtt_message_dump(mqtt_message_t* message) {
   printf("message\n");
   printf("  type:              %d\n", message->common.type);
@@ -82,6 +83,7 @@ void mqtt_message_dump(mqtt_message_t* message) {
     printf("\n");
   }
 }
+#endif
 
 void mqtt_message_clear(mqtt_message_t* message, int completely) {
   if(!message) {

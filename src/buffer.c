@@ -35,6 +35,7 @@
 
 #include "buffer.h"
 
+#ifdef DEBUG
 void mqtt_buffer_dump(mqtt_buffer_t* buffer) {
   printf("[%d] ", buffer->length);
 
@@ -64,3 +65,4 @@ void mqtt_buffer_dump_hex(mqtt_buffer_t* buffer) {
     printf("%02x ", buffer->data[i]);
   }
 }
+#endif

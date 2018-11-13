@@ -4,7 +4,7 @@ LIB_FOLDER         ?=.
 
 CFLAGS = -Wall -Werror -pedantic -std=c99 -DMQTT_ENABLE_SERVER=$(MQTT_ENABLE_SERVER) -DMQTT_ENABLE_CLIENT=$(MQTT_ENABLE_CLIENT) $(CFLAGS_EXTRA)
 ifdef DEBUG
-	CFLAGS += -Og -ggdb 
+	CFLAGS += -Og -ggdb -DDEBUG
 else
 	CFLAGS += -Os
 endif

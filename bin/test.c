@@ -62,7 +62,11 @@ int on_data_end(void* user_data, mqtt_message_t* message) {
 }
 
 int on_message_end(void* user_data, mqtt_message_t* message) {
+#ifdef DEBUG
   mqtt_message_dump(message);
+#else
+  printf("Recompile with `make DEBUG=1` to see message details");
+#endif
   return 0;
 }
 
