@@ -89,6 +89,8 @@ size_t mqtt_serialiser_size(mqtt_serialiser_t* serialiser, mqtt_message_t* messa
     }
 
     case MQTT_TYPE_SUBSCRIBE: {
+      len += 2; // for message_id
+
       mqtt_topicpair_t* cur = message->subscribe.topics;
       while(cur) {
         len += cur->name.length + 3;
@@ -240,6 +242,8 @@ mqtt_serialiser_rc_t mqtt_serialiser_write(mqtt_serialiser_t* serialiser, mqtt_m
     }
 
     case MQTT_TYPE_SUBSCRIBE: {
+      WRITE_ID(message->subscribe.message_id);
+
       mqtt_topicpair_t* cur = message->subscribe.topics;
       while(cur) {
         WRITE_STRING(cur->name);
@@ -302,8 +306,8 @@ mqtt_serialiser_rc_t mqtt_serialiser_write(mqtt_serialiser_t* serialiser, mqtt_m
       WRITE_STRING(message->publish.topic_name);
 
       if(message->publish.content.data) {
-        memcpy(&buffer, message->publish.content.data, message->publish.content.length);
-        buffer += message->publish.content.length;
+        memcpy(&buffer[offset], message->publish.content.data, message->publish.content.length);
+        offset += message->publish.content.length;
       }
 
       break;
