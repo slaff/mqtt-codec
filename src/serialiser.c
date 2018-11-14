@@ -299,11 +299,11 @@ mqtt_serialiser_rc_t mqtt_serialiser_write(mqtt_serialiser_t* serialiser, mqtt_m
 
       // Bi-directional messages
     case MQTT_TYPE_PUBLISH: {
-      if(message->publish.qos) {
+      WRITE_STRING(message->publish.topic_name);
+
+      if(message->common.qos) {
         WRITE_ID(message->publish.message_id)
       }
-
-      WRITE_STRING(message->publish.topic_name);
 
       if(message->publish.content.data) {
         memcpy(&buffer[offset], message->publish.content.data, message->publish.content.length);
