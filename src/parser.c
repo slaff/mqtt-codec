@@ -51,39 +51,48 @@
     parser->flags = (parser->flags & 0xfc);    \
   }
 
-#define READ_STRING(into)                                                                     \
-  {                                                                                           \
-    if(!(parser->flags & MQTT_PARSER_STATE_READ_STRING)) {                                    \
-      READ_BYTES(2);                                                                          \
-                                                                                              \
-      parser->string_length = parser->stored[0] * 256 + parser->stored[1];                    \
-      into.length           = parser->string_length;                                          \
-      parser->flags |= MQTT_PARSER_STATE_READ_STRING;                                         \
-    }                                                                                         \
-                                                                                              \
-    if(parser->buffer_pending == 0) {                                                         \
-      parser->buffer_length = into.length;                                                    \
-                                                                                              \
-      return MQTT_PARSER_RC_WANT_MEMORY;                                                      \
-    }                                                                                         \
-                                                                                              \
-    if(parser->buffer != NULL) {                                                              \
-      into.data             = parser->buffer;                                                 \
-      parser->buffer        = NULL;                                                           \
-      parser->buffer_length = 0;                                                              \
-    }                                                                                         \
-    size_t available = len - parser->nread;                                                   \
-    size_t consumed  = available < parser->string_length ? available : parser->string_length; \
-    size_t offset    = into.length - parser->string_length;                                   \
-    memcpy(&into.data[offset], &data[parser->nread], consumed);                               \
-    parser->string_length -= consumed;                                                        \
-    parser->nread += consumed;                                                                \
-    if(parser->string_length > 0) {                                                           \
-      return MQTT_PARSER_RC_INCOMPLETE;                                                       \
-    }                                                                                         \
-                                                                                              \
-    parser->buffer_pending = 0;                                                               \
-    parser->flags &= (~(MQTT_PARSER_STATE_READ_STRING));                                      \
+static int read_string(mqtt_parser_t* parser, const uint8_t* data, size_t len, mqtt_buffer_t* into) {
+  if(!(parser->flags & MQTT_PARSER_STATE_READ_STRING)) {
+    READ_BYTES(2);
+
+    parser->string_length = parser->stored[0] * 256 + parser->stored[1];
+    into->length          = parser->string_length;
+    parser->flags |= MQTT_PARSER_STATE_READ_STRING;
+  }
+
+  if(parser->buffer_pending == 0) {
+    parser->buffer_length = into->length;
+
+    return MQTT_PARSER_RC_WANT_MEMORY;
+  }
+
+  if(parser->buffer != NULL) {
+    into->data            = parser->buffer;
+    parser->buffer        = NULL;
+    parser->buffer_length = 0;
+  }
+  size_t available = len - parser->nread;
+  size_t consumed  = available < parser->string_length ? available : parser->string_length;
+  size_t offset    = into->length - parser->string_length;
+  memcpy(&into->data[offset], &data[parser->nread], consumed);
+  parser->string_length -= consumed;
+  parser->nread += consumed;
+  if(parser->string_length > 0) {
+    return MQTT_PARSER_RC_INCOMPLETE;
+  }
+
+  parser->buffer_pending = 0;
+  parser->flags &= (~(MQTT_PARSER_STATE_READ_STRING));
+
+  return -1;
+}
+
+#define READ_STRING(into)                           \
+  {                                                 \
+    int rc = read_string(parser, data, len, &into); \
+    if(rc > -1) {                                   \
+      return rc;                                    \
+    }                                               \
   }
 
 void mqtt_parser_init(mqtt_parser_t* parser, mqtt_parser_callbacks_t* callbacks) {
