@@ -35,6 +35,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "platform.h"
 #include "errors.h"
 #include "message.h"
 
@@ -55,7 +56,7 @@ typedef enum mqtt_parser_state_e {
   MQTT_PARSER_STATE_REMAINING_LENGTH,
   MQTT_PARSER_STATE_REMAINING_LENGTH_DONE,
   MQTT_PARSER_STATE_VARIABLE_HEADER,
-#ifdef MQTT_ENABLE_SERVER
+#if MQTT_ENABLE_SERVER
   // Client to server
   MQTT_PARSER_STATE_CONNECT,
   MQTT_PARSER_STATE_CONNECT_PROTOCOL_NAME,
@@ -77,7 +78,7 @@ typedef enum mqtt_parser_state_e {
   MQTT_PARSER_STATE_PINGREQ,
   MQTT_PARSER_STATE_DISCONNECT,
 #endif /* MQTT_ENABLE_SERVER */
-#ifdef MQTT_ENABLE_CLIENT
+#if MQTT_ENABLE_CLIENT
   // Server to client
   MQTT_PARSER_STATE_CONNACK,
   MQTT_PARSER_STATE_SUBACK,

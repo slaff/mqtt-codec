@@ -36,8 +36,11 @@
 #ifndef MQTT_PLATFORM_H
 #define MQTT_PLATFORM_H
 
-#if !(defined(MQTT_ENABLE_CLIENT) && defined(MQTT_ENABLE_SERVER))
+#ifndef MQTT_ENABLE_CLIENT
 #define MQTT_ENABLE_CLIENT 1
+#endif
+
+#ifndef MQTT_ENABLE_SERVER
 #define MQTT_ENABLE_SERVER 0
 #endif
 

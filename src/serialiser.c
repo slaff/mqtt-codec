@@ -61,7 +61,7 @@ size_t mqtt_serialiser_size(mqtt_serialiser_t* serialiser, mqtt_message_t* messa
   size_t len = 0;
 
   switch(message->common.type) {
-#ifdef MQTT_ENABLE_CLIENT
+#if MQTT_ENABLE_CLIENT
     // Client to server messages
     case MQTT_TYPE_CONNECT: {
       len += 8;
@@ -113,7 +113,7 @@ size_t mqtt_serialiser_size(mqtt_serialiser_t* serialiser, mqtt_message_t* messa
     }
 #endif /* MQTT_ENABLE_CLIENT */
 
-#ifdef MQTT_ENABLE_SERVER
+#if MQTT_ENABLE_SERVER
     // Server to client messages
     case MQTT_TYPE_CONNACK: {
       len += 2;
@@ -208,7 +208,7 @@ mqtt_serialiser_rc_t mqtt_serialiser_write(mqtt_serialiser_t* serialiser, mqtt_m
   } while(remaining_length > 0);
 
   switch(message->common.type) {
-#ifdef MQTT_ENABLE_CLIENT
+#if MQTT_ENABLE_CLIENT
     // Client to server messages
     case MQTT_TYPE_CONNECT: {
       WRITE_STRING(message->connect.protocol_name);
@@ -267,7 +267,7 @@ mqtt_serialiser_rc_t mqtt_serialiser_write(mqtt_serialiser_t* serialiser, mqtt_m
     }
 #endif /* MQTT_ENABLE_CLIENT */
 
-#ifdef MQTT_ENABLE_SERVER
+#if MQTT_ENABLE_SERVER
     // Server to client messages
     case MQTT_TYPE_CONNACK: {
       buffer[offset++] = message->connack._unused;
