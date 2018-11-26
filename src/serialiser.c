@@ -47,7 +47,7 @@
   {                                      \
     size_t sequence = id;                \
     if(!sequence) {                      \
-      sequence = serialiser->sequence++; \
+      sequence = ++serialiser->sequence; \
     }                                    \
     buffer[offset++] = sequence >> 8;    \
     buffer[offset++] = sequence & 0xFF;  \
@@ -196,7 +196,16 @@ size_t mqtt_serialiser_size(mqtt_serialiser_t* serialiser, mqtt_message_t* messa
 
 mqtt_serialiser_rc_t mqtt_serialiser_write(mqtt_serialiser_t* serialiser, mqtt_message_t* message, uint8_t* buffer,
                                            size_t len) {
+  if(serialiser == NULL || message == NULL || buffer == NULL) {
+    return MQTT_SERIALISER_RC_ERROR;
+  }
+
   unsigned int offset = 0;
+
+  if(message->common.type == MQTT_TYPE_SUBSCRIBE || message->common.type == MQTT_TYPE_UNSUBSCRIBE ||
+     message->common.type == MQTT_TYPE_PUBREL) {
+    message->common.qos = MQTT_QOS_AT_LEAST_ONCE;
+  }
 
   buffer[offset++] =
       message->common.retain + (message->common.qos << 1) + (message->common.dup << 3) + (message->common.type << 4);
