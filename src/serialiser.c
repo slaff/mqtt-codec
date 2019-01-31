@@ -214,6 +214,9 @@ mqtt_serialiser_rc_t mqtt_serialiser_write(mqtt_serialiser_t* serialiser, mqtt_m
   do {
     buffer[offset++] = remaining_length & 0x7f;
     remaining_length >>= 7;
+    // Set the high bit to indicate more bits
+    if(remaining_length > 0)
+      buffer[offset-1] |= 0x80;
   } while(remaining_length > 0);
 
   switch(message->common.type) {
