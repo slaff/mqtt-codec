@@ -96,6 +96,7 @@ static int read_string(mqtt_parser_t* parser, const uint8_t* data, size_t len, m
   }
 
 void mqtt_parser_init(mqtt_parser_t* parser, mqtt_parser_callbacks_t* callbacks) {
+  memset(parser, 0, sizeof(mqtt_parser_t));
   parser->state          = MQTT_PARSER_STATE_INITIAL;
   parser->nread          = 0;
   parser->needs          = 0;
