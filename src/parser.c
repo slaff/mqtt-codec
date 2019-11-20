@@ -487,6 +487,10 @@ static mqtt_parser_rc_t mqtt_parser_process(mqtt_parser_t* parser, mqtt_message_
         message->publish.content.length = parser->needs;
         message->publish.content.data   = NULL;
 
+        if(!parser->needs) {
+          goto DONE;
+        }
+
         int rc = parser->callbacks->on_data_begin(parser->data, message);
         if(rc) {
           return rc;

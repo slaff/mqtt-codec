@@ -52,7 +52,7 @@ int on_data_payload(void* user_data, mqtt_message_t* message, const char* data, 
   char x[length + 1];
   memcpy(x, data, length);
   x[length] = 0;
-  printf("Got Data: %s\n", x);
+  printf("Got Data: %s (%lu)\n", x, length);
 
   return 0;
 }
@@ -129,6 +129,9 @@ void test_parser() {
       /* Publish */
       0x30, 0x17, 0x00, 0x0b, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x48, 0x65, 0x6c, 0x6c,
       0x6f, 0x20, 0x4d, 0x51, 0x54, 0x54,
+
+      /* Publish without payload */
+      0x30, 0x0d, 0x00, 0x0b, 'S', 'a', 'm', 'p', 'l', 'e', 'T', 'o', 'p', 'i', 'c',
 
       /* Disconnect */
       0xe0, 0x00};
