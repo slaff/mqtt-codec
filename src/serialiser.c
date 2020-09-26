@@ -37,7 +37,7 @@
 
 #define WRITE_STRING(name)                             \
   {                                                    \
-    buffer[offset++] = name.length / 0xff;             \
+    buffer[offset++] = name.length >> 8;               \
     buffer[offset++] = name.length & 0xff;             \
     memcpy(&(buffer[offset]), name.data, name.length); \
     offset += name.length;                             \
