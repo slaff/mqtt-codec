@@ -190,52 +190,101 @@ void test_parser() {
   printf("\n");
 }
 
+static void test_serialiser_procces_msg(mqtt_serialiser_t* serialiser, mqtt_message_t* message) {
+  size_t packet_length    = mqtt_serialiser_size(serialiser, message);
+  uint8_t packet[packet_length];
+  mqtt_serialiser_write(serialiser, message, packet, packet_length);
+
+  printf("packet length: %zu\n", packet_length);
+  printf("packet data:   ");
+  for(int j = 0; j < packet_length; j++) {
+    printf("%02x ", packet[j]);
+  }
+  printf("\n");
+
+  mqtt_message_clear(message, 0);
+}
+
+
 void test_serialiser() {
   mqtt_serialiser_t serialiser;
-  size_t message_count = 3;
-  mqtt_message_t messages[message_count];
-  memset(&messages, 0, sizeof(mqtt_message_t) * message_count);
+  mqtt_message_t message;
+
+  const char topic[] = "a/b/c";
+  const char topic_120[] = "12345678901234567890"
+                           "12345678901234567890"
+                           "12345678901234567890"
+                           "12345678901234567890"
+                           "12345678901234567890"
+                           "12345678901234567890";
 
   // PUBLISH message
-  messages[0].common.type = MQTT_TYPE_PUBLISH;
-  messages[0].common.qos  = MQTT_QOS_AT_LEAST_ONCE;
+  memset(&message, 0, sizeof(message));
+  message.common.type = MQTT_TYPE_PUBLISH;
+  message.common.qos  = MQTT_QOS_AT_LEAST_ONCE;
 
-  char topic[]                          = "a/b/c";
-  messages[0].publish.topic_name.length = strlen(topic);
-  messages[0].publish.topic_name.data   = (uint8_t*)MQTT_MALLOC(strlen(topic));
-  memcpy(messages[0].publish.topic_name.data, topic, strlen(topic));
-  messages[0].publish.content.length = 3; // NO actual data is assigned just yet.
-  messages[0].publish.content.data   = (uint8_t*)MQTT_MALLOC(3);
-  memcpy(messages[0].publish.content.data, "txt", 3);
+  message.publish.topic_name.length = strlen(topic);
+  message.publish.topic_name.data   = (uint8_t*)MQTT_MALLOC(strlen(topic));
+  memcpy(message.publish.topic_name.data, topic, strlen(topic));
+  message.publish.content.length = 3; // NO actual data is assigned just yet.
+  message.publish.content.data   = (uint8_t*)MQTT_MALLOC(3);
+  memcpy(message.publish.content.data, "txt", 3);
+
+  test_serialiser_procces_msg(&serialiser, &message);
+  
+  
+  // PUBLISH message - size of Remaining Length field = 1 byte
+  // topic_len + topic + PacketID + payload = 2 + 120 + 2 + 3 = 127 = remainig length 
+  // ==> packet length = 129
+  memset(&message, 0, sizeof(message));
+  message.common.type = MQTT_TYPE_PUBLISH;
+  message.common.qos  = MQTT_QOS_AT_LEAST_ONCE;
+
+  message.publish.topic_name.length = strlen(topic_120);
+  message.publish.topic_name.data   = (uint8_t*)MQTT_MALLOC(strlen(topic_120));
+  memcpy(message.publish.topic_name.data, topic_120, strlen(topic_120));
+  message.publish.content.length = 3; // NO actual data is assigned just yet.
+  message.publish.content.data   = (uint8_t*)MQTT_MALLOC(3);
+  memcpy(message.publish.content.data, "txt", 3);
+
+  test_serialiser_procces_msg(&serialiser, &message);
+
+
+  // PUBLISH message - size of Remaining Length field = 2 bytes 
+  // topic_len + topic + PacketID + payload = 2 + 120 + 2 + 4 = 128 = remainig length 
+  // ==> packet length = 131
+  memset(&message, 0, sizeof(message));
+  message.common.type = MQTT_TYPE_PUBLISH;
+  message.common.qos  = MQTT_QOS_AT_LEAST_ONCE;
+
+  message.publish.topic_name.length = strlen(topic_120);
+  message.publish.topic_name.data   = (uint8_t*)MQTT_MALLOC(strlen(topic_120));
+  memcpy(message.publish.topic_name.data, topic_120, strlen(topic_120));
+  message.publish.content.length = 4; // NO actual data is assigned just yet.
+  message.publish.content.data   = (uint8_t*)MQTT_MALLOC(4);
+  memcpy(message.publish.content.data, "txtx", 4);
+
+  test_serialiser_procces_msg(&serialiser, &message);
+
 
   // SUBSCRIBE message
-  messages[1].common.type = MQTT_TYPE_SUBSCRIBE;
+  memset(&message, 0, sizeof(message));
+  message.common.type = MQTT_TYPE_SUBSCRIBE;
 
   mqtt_topicpair_t* topics = (mqtt_topicpair_t*)MQTT_MALLOC(sizeof(mqtt_topicpair_t));
   topics->name.length      = strlen(topic);
   topics->name.data        = (uint8_t*)MQTT_MALLOC(topics->name.length);
   topics->next             = NULL;
   memcpy(topics->name.data, topic, topics->name.length);
-  messages[1].subscribe.topics = topics;
+  message.subscribe.topics = topics;
+  test_serialiser_procces_msg(&serialiser, &message);
 
+  
   // PINGRESP
-  messages[2].common.type = MQTT_TYPE_PINGRESP;
+  memset(&message, 0, sizeof(message));
+  message.common.type = MQTT_TYPE_PINGRESP;
+  test_serialiser_procces_msg(&serialiser, &message);
 
-  for(int i = 0; i < message_count; i++) {
-    mqtt_message_t* message = &messages[i];
-    size_t packet_length    = mqtt_serialiser_size(&serialiser, message);
-    uint8_t packet[packet_length];
-    mqtt_serialiser_write(&serialiser, message, packet, packet_length);
-
-    printf("packet length: %zu\n", packet_length);
-    printf("packet data:   ");
-    for(int j = 0; j < packet_length; j++) {
-      printf("%02x ", packet[j]);
-    }
-    printf("\n");
-
-    mqtt_message_clear(message, 0);
-  }
 }
 
 int main(int argc, char** argv) {
