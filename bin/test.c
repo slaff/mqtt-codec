@@ -190,7 +190,7 @@ void test_parser() {
   printf("\n");
 }
 
-static void test_serialiser_procces_msg(mqtt_serialiser_t* serialiser, mqtt_message_t* message) {
+static void test_serialiser_proccess_message(mqtt_serialiser_t* serialiser, mqtt_message_t* message) {
   size_t packet_length    = mqtt_serialiser_size(serialiser, message);
   uint8_t packet[packet_length];
   mqtt_serialiser_write(serialiser, message, packet, packet_length);
@@ -230,7 +230,7 @@ void test_serialiser() {
   message.publish.content.data   = (uint8_t*)MQTT_MALLOC(3);
   memcpy(message.publish.content.data, "txt", 3);
 
-  test_serialiser_procces_msg(&serialiser, &message);
+  test_serialiser_proccess_message(&serialiser, &message);
   
   
   // PUBLISH message - size of Remaining Length field = 1 byte
@@ -247,7 +247,7 @@ void test_serialiser() {
   message.publish.content.data   = (uint8_t*)MQTT_MALLOC(3);
   memcpy(message.publish.content.data, "txt", 3);
 
-  test_serialiser_procces_msg(&serialiser, &message);
+  test_serialiser_proccess_message(&serialiser, &message);
 
 
   // PUBLISH message - size of Remaining Length field = 2 bytes 
@@ -264,7 +264,7 @@ void test_serialiser() {
   message.publish.content.data   = (uint8_t*)MQTT_MALLOC(4);
   memcpy(message.publish.content.data, "txtx", 4);
 
-  test_serialiser_procces_msg(&serialiser, &message);
+  test_serialiser_proccess_message(&serialiser, &message);
 
 
   // SUBSCRIBE message
@@ -277,13 +277,13 @@ void test_serialiser() {
   topics->next             = NULL;
   memcpy(topics->name.data, topic, topics->name.length);
   message.subscribe.topics = topics;
-  test_serialiser_procces_msg(&serialiser, &message);
+  test_serialiser_proccess_message(&serialiser, &message);
 
   
   // PINGRESP
   memset(&message, 0, sizeof(message));
   message.common.type = MQTT_TYPE_PINGRESP;
-  test_serialiser_procces_msg(&serialiser, &message);
+  test_serialiser_proccess_message(&serialiser, &message);
 
 }
 
