@@ -37,7 +37,7 @@
 
 #define WRITE_STRING(name)                             \
   {                                                    \
-    buffer[offset++] = name.length / 0xff;             \
+    buffer[offset++] = name.length >> 8;               \
     buffer[offset++] = name.length & 0xff;             \
     memcpy(&(buffer[offset]), name.data, name.length); \
     offset += name.length;                             \
@@ -178,7 +178,6 @@ size_t mqtt_serialiser_size(mqtt_serialiser_t* serialiser, mqtt_message_t* messa
   }
 
   message->common.length = len;
-  len += 1; // initial byte with flags and type
 
   // the bytes needed for the common length
   if(len <= 127) {
@@ -190,6 +189,8 @@ size_t mqtt_serialiser_size(mqtt_serialiser_t* serialiser, mqtt_message_t* messa
   } else if(len <= 268435455) {
     len += 4;
   }
+
+  len += 1; // initial byte with flags and type
 
   return len;
 }
