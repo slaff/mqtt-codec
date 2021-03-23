@@ -46,7 +46,17 @@ typedef enum mqtt_error_e {
 
 } mqtt_error_t;
 
+typedef enum mqtt_connect_error_e {
+  MQTT_CONNECT_ERROR_NONE = 0,
+  MQTT_CONNECT_ERROR_INVALID_VERSION,
+  MQTT_CONNECT_ERROR_CLIENT_ID,
+  MQTT_CONNECT_ERROR_UNAVAILABLE,
+  MQTT_CONNECT_ERROR_BAD_USERNAME_OR_PASSWORD,
+  MQTT_CONNECT_ERROR_NOT_AUTHORIZED
+} mqtt_connect_error_t;
+
 const char* mqtt_error_string(mqtt_error_t error);
+const char* mqtt_connect_error_string(mqtt_connect_error_t error);
 
 #ifdef __cplusplus
 }

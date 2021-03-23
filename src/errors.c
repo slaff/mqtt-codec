@@ -40,9 +40,22 @@ const char* mqtt_error_strings[] = {
     "[parser] left in an invalid state",
     "[parser] remaining length field was invalid",
     "[parser] message id was invalid",
-    "[serialiser] message if was invalid",
+    "[serialiser] message id was invalid",
+};
+
+const char* mqtt_connect_error_strings[] = {
+    NULL,
+    "Unacceptable protocol version",
+    "Client identifier rejected",
+    "Server unavailable",
+    "Bad user name or password",
+    "Not authorized"
 };
 
 const char* mqtt_error_string(mqtt_error_t error) {
   return mqtt_error_strings[error];
+}
+
+const char* mqtt_connect_error_string(mqtt_connect_error_t error) {
+  return mqtt_connect_error_strings[error];
 }
